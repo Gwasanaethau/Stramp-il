@@ -22,6 +22,8 @@ public class STOMPServer
 
 // ------------------------------------------- STOMPServer Class ---------------
 
+  private static final String PROG_NAME = "Strampáil Server";
+
   private ServerSocket socket;
   private Socket clientSocket;
   private int port;
@@ -37,6 +39,8 @@ public class STOMPServer
   public STOMPServer(int port)
   {
 
+    System.out.println(PROG_NAME + ": " +
+      "Winding-up server on port: \033[36m" + port + "\033[0m");
     this.port = port;
 
     try
@@ -46,15 +50,15 @@ public class STOMPServer
 
     catch (IllegalArgumentException iae)
     {
-      System.err.println("Strampáil Server: \033[31mPlease specify a port" +
-        " number between \033[33m0\033[31m and \033[33m65535\033[0m");
+      System.err.println(PROG_NAME + ": \033[31mPlease specify a port" +
+        " number between \033[1m0\033[0;31m and \033[1m65535\033[0m");
     } // End ‘IllegalArgumentException’ catch
 
     catch (IOException ioe)
     {
-      System.err.println("Strampáil Server: \033[31mCannot connect to port" +
-        " \033[36m" + port + "\033[0m. Check that something isn’t already" +
-        " connected there and try again.");
+      System.err.println(PROG_NAME + ": \033[31mCannot connect to port" +
+        " \033[1m" + port + "\033[0;31m. Check that something isn’t already" +
+        " connected there and try again.\033[0m");
     } // End ‘IOException’ catch
 
   } // End ‘STOMPServer(int)’ Constructor
@@ -67,19 +71,19 @@ public class STOMPServer
   public void listen()
   {
 
-    System.out.println("Strampáil Server: " +
-      "\033[34mWaiting for connections on port: \033[33m" + port + "\033[m");
+    System.out.println(PROG_NAME + ": " +
+      "Waiting for connections on port: \033[36m" + port + "\033[0m");
 
     try
     {
       clientSocket = socket.accept();
-      System.out.println("Strampáil Server: \033[32mClient connected!\033[0m");
+      System.out.println(PROG_NAME + ": \033[36mClient connected!\033[0m");
       broadcaster = new PrintWriter(clientSocket.getOutputStream(), false);
     } // End try
 
     catch (IOException ioe)
     {
-      System.err.println("Strampáil Server: " +
+      System.err.println(PROG_NAME + ": " +
         "\033[31mI/O error connecting client.\033[0m");
     } // End ‘IOException’ catch
 
@@ -96,8 +100,7 @@ public class STOMPServer
 
     if (clientSocket != null)
     {
-      System.out.println("Strampáil Server: " +
-        "\033[34mDisconnecting client.\033[0m");
+      System.out.println(PROG_NAME + ": Disconnecting client.");
 
       try
       {
@@ -106,14 +109,13 @@ public class STOMPServer
 
       catch (IOException ioe)
       {
-        System.err.println("Strampáil Server: " +
+        System.err.println(PROG_NAME + ": " +
           "\033[31mI/O error when disconnecting client.\033[0m");
       } // End ‘IOException’ catch
 
     } // End if
 
-    System.out.println("Strampáil Server: " +
-      "\033[34mWinding-down server.\033[0m");
+    System.out.println(PROG_NAME + ": Winding-down server.");
     try
     {
       socket.close();
@@ -121,7 +123,7 @@ public class STOMPServer
 
     catch (IOException ioe)
     {
-      System.err.println("Strampáil Server: " +
+      System.err.println(PROG_NAME + ": " +
         "\033[31mI/O error when winding-down.\033[0m");
     } // End ‘IOException’ catch
 
@@ -140,12 +142,12 @@ public class STOMPServer
   {
 
     if (clientSocket == null)
-      System.err.println("Strampáil Server: " +
+      System.err.println(PROG_NAME + ": " +
         "\033[33mNo clients to send message to!\033[0m");
     else
     {
-      System.out.println("Stramáil Server: " +
-        "\033[36mSending message ‘" + message + "’ to client.\033[0m");
+      System.out.println(PROG_NAME + ": " +
+        "Sending message ‘" + message + "’ to client.");
       broadcaster.write(message);
       broadcaster.flush();
     } // End else
