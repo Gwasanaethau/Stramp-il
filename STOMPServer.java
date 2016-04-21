@@ -167,8 +167,8 @@ public class STOMPServer
 
     STOMPServer server = new STOMPServer(50005);
     server.listen();
-    server.send("Hi! This is a test message from the server!");
-    server.send("Hallo! Dies ist einem Prüfungssatz von den Server!");
+    server.send("Hi! This is a test message from the server!\0");
+    server.send("Hallo! Dies ist einem Prüfungssatz von den Server!\0");
     server.close();
 
   } // End ‘main(String[])’ Method

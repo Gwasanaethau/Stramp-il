@@ -78,6 +78,39 @@ public class STOMPClient
   /**
    * Instructs the client to disconnect from the server and shut itself down.
    */
+  public String receive()
+  {
+
+    StringBuilder partialMessage = new StringBuilder();
+
+    try
+    {
+      while (true)
+      {
+        char character = (char) receiver.read();
+
+        if (character == '\0')
+          break;
+
+        partialMessage.append(character);
+      } // End while
+    } // End try
+
+    catch (IOException ioe)
+    {
+      System.err.println(PROG_NAME + ": " +
+        "\033[31mUnable to parse message.\033[0m");
+    } // End ‘IOException’ catch
+
+    return partialMessage.toString();
+
+  } // End ‘receive()’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Instructs the client to disconnect from the server and shut itself down.
+   */
   public void close()
   {
 
@@ -114,6 +147,7 @@ public class STOMPClient
   {
 
     STOMPClient client = new STOMPClient(50005);
+    System.out.println("Message: " + client.receive());
     client.close();
 
   } // End ‘main(String[] args)’ Method
