@@ -23,25 +23,48 @@ public class STOMPClient implements Constants
 
 // ------------------------------------------- STOMPClient Class ---------------
 
-  private Socket socket;
   private int port;
+  private Socket socket;
   private OutputStream transmitter;
   private STOMPListener receiver;
 
 // ------------------------------------------- STOMPClient Class ---------------
 
   /**
-   * Sets up and initialises a new STOMP client and attempts to connect to a
-   * server on the given port.
+   * Sets up and initialises a new STOMP client.
    *
-   * @param port The port number that the server should listen on.
+   * @param port The port number that the client should attempt to connect to.
    */
   public STOMPClient(int port)
   {
 
-    Printer.printInfo(
-      "Winding-up client and connecting to server on port " + port);
     this.port = port;
+    socket = null;
+    transmitter = null;
+    receiver = null;
+
+  } // End ‘STOMPClient(int)’ Constructor
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Tells the client to initiate a TCP handshake with the server.
+   * This must be performed before any STOMP messages can be passed.
+   *
+   * @return Whether the TCP handshake concluded successfully or not.
+   */
+  public boolean handshake()
+  {
+
+    if (socket != null)
+    {
+      Printer.printWarning("TCP connection already established!");
+      return false;
+    } // End if
+
+    Printer.printInfo(
+      "Winding-up client and handshaking with server on port " + port);
+    boolean success = false;
 
     try
     {
@@ -49,6 +72,7 @@ public class STOMPClient implements Constants
       receiver = new STOMPListener(socket.getInputStream());
       receiver.start();
       transmitter = socket.getOutputStream();
+      success = true;
     } // End try
 
     catch (UnknownHostException uhe)
@@ -68,7 +92,9 @@ public class STOMPClient implements Constants
         " Check that there’s a server running there and try again.");
     } // End ‘IOException’ catch
 
-  } // End ‘STOMPClient(int)’ Constructor
+    return success;
+
+  } // End ‘handshake()’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -203,25 +229,6 @@ public class STOMPClient implements Constants
       Printer.printWarning("Connection already closed!");
 
   } // End ‘close()’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  /**
-   * Sets up and initialises a test STOMP client, sends a request to port 50005
-   * for a connection, receives test messages and then shuts itself down.
-   *
-   * @param args Not used (ignored).
-   */
-  public static void main(String args[])
-  {
-
-    STOMPClient client = new STOMPClient(51515);
-    client.connect();
-    // client.stomp();
-    // try {Thread.sleep(250);}catch(Throwable t){t.printStackTrace();}
-    client.close();
-
-  } // End ‘main(String[] args)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
