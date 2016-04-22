@@ -13,7 +13,7 @@ import java.util.ArrayList;
  * and (currently) displays them on the CLI.
  *
  * @author Mark David Pokorny
- * @version Dé hAoine, 22ú Aibreán 2016
+ * @version Dé Sathairn, 23ú Aibreán 2016
  * @since Dé hAoine, 22ú Aibreán 2016
  */
 class STOMPListener extends Thread
@@ -45,17 +45,19 @@ class STOMPListener extends Thread
     {
       listen();
     } // End while
+
     Printer.printDebug("Thread exited!");
 
   } // End ‘run()’ Method
 
 // ----------------------------------------- STOMPListener Class ---------------
 
-  void listen()
+  String listen()
   {
 
     byte[] partialMessage = new byte[1024];
     int count = 0;
+    String message = null;
 
     try
     {
@@ -68,15 +70,15 @@ class STOMPListener extends Thread
         else if (symbol == -1)
         {
           active = false;
-          return;
+          return message;
         } // End else if
 
         partialMessage[count++] = symbol;
       } // End while
 
+      message = new String(partialMessage, 0, count);
       Printer.printDebug("Message received \033[1;35m↓\n←←←\033[0m\n" +
-        new String(partialMessage, 0, count) +
-        "\033[1;35m←←←\033[0m");
+        message + "\033[1;35m←←←\033[0m");
     } // End try
 
     catch (SocketException se)
@@ -91,6 +93,8 @@ class STOMPListener extends Thread
       ioe.printStackTrace();
       active = false;
     } // End ‘IOException’ catch
+
+    return message;
 
   } // End ‘listen()’ Method
 
