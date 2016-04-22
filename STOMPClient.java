@@ -25,7 +25,6 @@ public class STOMPClient implements Constants
 
   private Socket socket;
   private int port;
-  private boolean tcpConnected;
   private OutputStream transmitter;
   private STOMPListener receiver;
 
@@ -40,9 +39,8 @@ public class STOMPClient implements Constants
   public STOMPClient(int port)
   {
 
-    printInfo("Winding-up client and connecting to server on port " + port);
+    Printer.printInfo("Winding-up client and connecting to server on port " + port);
     this.port = port;
-    tcpConnected = false;
 
     try
     {
@@ -50,22 +48,21 @@ public class STOMPClient implements Constants
       receiver = new STOMPListener(socket.getInputStream());
       receiver.start();
       transmitter = socket.getOutputStream();
-      tcpConnected = true;
     } // End try
 
     catch (UnknownHostException uhe)
     {
-      printError("‘localhost’ not recognised. Are you on Windows perchance?");
+      Printer.printError("‘localhost’ not recognised. Are you on Windows perchance?");
     } // End ‘UnknownHostException’ catch
 
     catch (IllegalArgumentException iae)
     {
-      printError("Please specify a port number between 0 and 65535");
+      Printer.printError("Please specify a port number between 0 and 65535");
     } // End ‘IllegalArgumentException’ catch
 
     catch (IOException ioe)
     {
-      printError("Cannot connect to port " + port + "." +
+      Printer.printError("Cannot connect to port " + port + "." +
         " Check that there’s a server running there and try again.");
     } // End ‘IOException’ catch
 
@@ -143,9 +140,9 @@ public class STOMPClient implements Constants
   private void command(String command, String login, String password)
   {
 
-    if (!tcpConnected)
+    if (socket == null || !socket.isConnected() || socket.isClosed())
     {
-      printError("Cannot send " + command + " command due to absence of a" +
+      Printer.printError("Cannot send " + command + " command due to absence of a" +
         " TCP connection. Ensure that you can connect to the server with TCP" +
         " first before trying to send STOMP messages.");
       return;
@@ -162,12 +159,14 @@ public class STOMPClient implements Constants
     try
     {
       transmitter.write(stompFrame.toString().getBytes());
-      printDebug(stompFrame.toString().substring(0, stompFrame.length() - 2));
+      Printer.printDebug("Sending command \033[1;33m↓\n→→→\033[0m\n" +
+        stompFrame.toString().substring(0, stompFrame.length() - 1)
+        + "\033[1;33m→→→\033[0m");
     } // End try
 
     catch (IOException ioe)
     {
-      printError("Cannot send " + command + " command due to I/O issue.");
+      Printer.printError("Cannot send " + command + " command due to I/O issue.");
       this.close();
     } // End ‘IOException’ catch
 
@@ -183,8 +182,7 @@ public class STOMPClient implements Constants
 
     if (socket != null && !socket.isClosed())
     {
-      printInfo("Disconnecting from server.");
-      tcpConnected = false;
+      Printer.printInfo("Disconnecting from server.");
 
       try
       {
@@ -193,49 +191,14 @@ public class STOMPClient implements Constants
 
       catch (IOException ioe)
       {
-        printError("I/O error when disconnecting from server.");
+        Printer.printError("I/O error when disconnecting from server.");
       } // End ‘IOException’ catch
 
     } // End if
     else
-      printWarning("Connection already closed!");
+      Printer.printWarning("Connection already closed!");
 
   } // End ‘close()’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  private static void printDebug(String message)
-  {
-    printGeneric(2, message);
-  } // End ‘printInfo(String)’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  private static void printInfo(String message)
-  {
-    printGeneric(4, message);
-  } // End ‘printInfo(String)’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  private static void printError(String message)
-  {
-    printGeneric(1, message);
-  } // End ‘printError(String)’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  private static void printWarning(String message)
-  {
-    printGeneric(3, message);
-  } // End ‘printWarning(String)’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  private static void printGeneric(int colour, String message)
-  {
-    System.err.println("\033[3" + colour + "m→\033[0m " + message);
-  } // End ‘printGeneric(int, String)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 

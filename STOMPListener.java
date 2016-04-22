@@ -1,7 +1,6 @@
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 package strampáil;
-import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.SocketException;
@@ -22,27 +21,25 @@ class STOMPListener extends Thread
 
 // ----------------------------------------- STOMPListener Class ---------------
 
-  private static final String PROG_NAME = "Strampáil Client (Receiver)";
-
-  private BufferedInputStream receiver;
+  private InputStream receiver;
   private boolean active;
 
 // ----------------------------------------- STOMPListener Class ---------------
 
-  STOMPListener(BufferedInputStream receiver)
+  STOMPListener(InputStream receiver)
   {
 
     this.receiver = receiver;
     active = true;
 
-  } // End ‘STOMPListener(BufferedInputStream)’ Constructor
+  } // End ‘STOMPListener(InputStream)’ Constructor
 
 // ----------------------------------------- STOMPListener Class ---------------
 
   public void run()
   {
 
-    System.out.println("\033[35mStub listener activated!\033[0m");
+    Printer.printDebug("Stub listener activated!");
 
     while (active)
     {
@@ -62,28 +59,26 @@ class STOMPListener extends Thread
           partialMessage[count++] = symbol;
         } // End while
 
-        System.out.print("Message received: ");
-        System.out.write(partialMessage, 0, count);
-        System.out.println();
+        Printer.printDebug("Message received \033[1;35m↓\n←←←\033[0m\n" +
+          new String(partialMessage, 0, count) +
+          "\033[1;35m←←←\033[0m");
       } // End try
 
       catch (SocketException se)
       {
-        System.err.println(PROG_NAME + ": " +
-          "Closing receiver.");
+        Printer.printInfo("Closing receiver.");
         active = false;
       } // End ‘SocketException’ catch
 
       catch (IOException ioe)
       {
-        System.err.println(PROG_NAME + ": " +
-          "\033[31mUnable to parse message.\033[0m");
+        Printer.printError("Unable to parse message.");
         ioe.printStackTrace();
         active = false;
       } // End ‘IOException’ catch
 
     } // End while
-    System.out.println("Thread exited!");
+    Printer.printDebug("Thread exited!");
 
   } // End ‘run()’ Method
 
