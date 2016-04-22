@@ -1,7 +1,7 @@
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 package strampáil;
-import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -28,8 +28,8 @@ public class STOMPClient implements Constants
   private Socket socket;
   private int port;
   private boolean tcpConnected;
-  private InputStream receiver;
   private OutputStream transmitter;
+  private STOMPListener receiver;
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -51,7 +51,8 @@ public class STOMPClient implements Constants
     try
     {
       socket = new Socket("localhost", port);
-      receiver = socket.getInputStream();
+      receiver = new STOMPListener(new BufferedInputStream(socket.getInputStream()));
+      receiver.start();
       transmitter = socket.getOutputStream();
       tcpConnected = true;
     } // End try
@@ -153,14 +154,14 @@ public class STOMPClient implements Constants
     {
 
       System.err.println(PROG_NAME + ": \033[31mCannot send" +
-        " \033[1m" + command + "\033[0;31m command due to no TCP connection" +
-        ". Ensure that you can connect to the server with TCP first!\033[0m");
+        " \033[1m" + command + "\033[0;31m command due to no TCP connection." +
+        " Ensure that you can connect to the server with TCP first!\033[0m");
       return;
 
     } // End if
 
     StringBuilder stompFrame = new StringBuilder(
-      command + "\n" + /*STOMP_VER +*/ HOST_NAME);
+      command + "\n" + STOMP_VER + HOST_NAME);
 
     if (login != null && password != null)
       stompFrame.append("login:" + login + "\npasscode:" + password + "\n");
@@ -180,39 +181,6 @@ public class STOMPClient implements Constants
     } // End ‘IOException’ catch
 
   } // End ‘command(String, String, String)’ Method
-
-// ------------------------------------------- STOMPClient Class ---------------
-
-  // /**
-  //  * Instructs the client to disconnect from the server and shut itself down.
-  //  */
-  // public String receive()
-  // {
-  //
-  //   StringBuilder partialMessage = new StringBuilder();
-  //
-  //   try
-  //   {
-  //     while (true)
-  //     {
-  //       char character = (char) receiver.read();
-  //
-  //       if (character == '\0')
-  //         break;
-  //
-  //       partialMessage.append(character);
-  //     } // End while
-  //   } // End try
-  //
-  //   catch (IOException ioe)
-  //   {
-  //     System.err.println(PROG_NAME + ": " +
-  //       "\033[31mUnable to parse message.\033[0m");
-  //   } // End ‘IOException’ catch
-  //
-  //   return partialMessage.toString();
-  //
-  // } // End ‘receive()’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -240,7 +208,7 @@ public class STOMPClient implements Constants
 
     } // End if
 
-    System.exit(0);
+    // System.exit(0);
 
   } // End ‘close()’ Method
 
@@ -257,6 +225,7 @@ public class STOMPClient implements Constants
 
     STOMPClient client = new STOMPClient(51515);
     client.connect();
+    try {Thread.sleep(100);}catch(Throwable t){t.printStackTrace();}
     //client.stomp();
     client.close();
 
