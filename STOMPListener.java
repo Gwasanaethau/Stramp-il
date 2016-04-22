@@ -65,6 +65,11 @@ class STOMPListener extends Thread
 
         if (symbol == 0)
           break;
+        else if (symbol == -1)
+        {
+          active = false;
+          return;
+        } // End else if
 
         partialMessage[count++] = symbol;
       } // End while
