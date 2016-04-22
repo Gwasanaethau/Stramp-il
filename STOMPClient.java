@@ -1,7 +1,7 @@
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
 package strampáil;
-import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
@@ -23,8 +23,6 @@ public class STOMPClient implements Constants
 
 // ------------------------------------------- STOMPClient Class ---------------
 
-  private static final String PROG_NAME = "Strampáil Client";
-
   private Socket socket;
   private int port;
   private boolean tcpConnected;
@@ -42,16 +40,14 @@ public class STOMPClient implements Constants
   public STOMPClient(int port)
   {
 
-    System.out.println(PROG_NAME + ": " +
-      "Winding-up client and connecting to server on port: \033[36m" +
-      port + "\033[0m");
+    printInfo("Winding-up client and connecting to server on port " + port);
     this.port = port;
     tcpConnected = false;
 
     try
     {
       socket = new Socket("localhost", port);
-      receiver = new STOMPListener(new BufferedInputStream(socket.getInputStream()));
+      receiver = new STOMPListener(socket.getInputStream());
       receiver.start();
       transmitter = socket.getOutputStream();
       tcpConnected = true;
@@ -59,21 +55,18 @@ public class STOMPClient implements Constants
 
     catch (UnknownHostException uhe)
     {
-      System.err.println(PROG_NAME + ": \033[31m‘localhost’ not" +
-        " recognised. Are you on Windows perchance?\033[0m");
+      printError("‘localhost’ not recognised. Are you on Windows perchance?");
     } // End ‘UnknownHostException’ catch
 
     catch (IllegalArgumentException iae)
     {
-      System.err.println(PROG_NAME + ": \033[31mPlease specify a port" +
-        " number between \033[1m0\033[0;31m and \033[1m65535\033[0m");
+      printError("Please specify a port number between 0 and 65535");
     } // End ‘IllegalArgumentException’ catch
 
     catch (IOException ioe)
     {
-      System.err.println(PROG_NAME + ": \033[31mCannot connect to port" +
-        " \033[1m" + port + "\033[0;31m. Check that there’s a server running" +
-        " there and try again.\033[0m");
+      printError("Cannot connect to port " + port + "." +
+        " Check that there’s a server running there and try again.");
     } // End ‘IOException’ catch
 
   } // End ‘STOMPClient(int)’ Constructor
@@ -152,12 +145,10 @@ public class STOMPClient implements Constants
 
     if (!tcpConnected)
     {
-
-      System.err.println(PROG_NAME + ": \033[31mCannot send" +
-        " \033[1m" + command + "\033[0;31m command due to no TCP connection." +
-        " Ensure that you can connect to the server with TCP first!\033[0m");
+      printError("Cannot send " + command + " command due to absence of a" +
+        " TCP connection. Ensure that you can connect to the server with TCP" +
+        " first before trying to send STOMP messages.");
       return;
-
     } // End if
 
     StringBuilder stompFrame = new StringBuilder(
@@ -171,12 +162,12 @@ public class STOMPClient implements Constants
     try
     {
       transmitter.write(stompFrame.toString().getBytes());
+      printDebug(stompFrame.toString().substring(0, stompFrame.length() - 2));
     } // End try
 
     catch (IOException ioe)
     {
-      System.err.println(PROG_NAME + ": \033[31mCannot send" +
-        "\033[1m" + command + "\033[0;31m command.\033[0m");
+      printError("Cannot send " + command + " command due to I/O issue.");
       this.close();
     } // End ‘IOException’ catch
 
@@ -190,27 +181,61 @@ public class STOMPClient implements Constants
   public void close()
   {
 
-    if (socket != null)
+    if (socket != null && !socket.isClosed())
     {
-      System.out.println(PROG_NAME + ": Disconnecting from server.");
+      printInfo("Disconnecting from server.");
+      tcpConnected = false;
 
       try
       {
         socket.close();
-        tcpConnected = false;
       } // End try
 
       catch (IOException ioe)
       {
-        System.err.println(PROG_NAME + ": " +
-          "\033[31mI/O error when disconnecting from server.\033[0m");
+        printError("I/O error when disconnecting from server.");
       } // End ‘IOException’ catch
 
     } // End if
-
-    // System.exit(0);
+    else
+      printWarning("Connection already closed!");
 
   } // End ‘close()’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  private static void printDebug(String message)
+  {
+    printGeneric(2, message);
+  } // End ‘printInfo(String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  private static void printInfo(String message)
+  {
+    printGeneric(4, message);
+  } // End ‘printInfo(String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  private static void printError(String message)
+  {
+    printGeneric(1, message);
+  } // End ‘printError(String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  private static void printWarning(String message)
+  {
+    printGeneric(3, message);
+  } // End ‘printWarning(String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  private static void printGeneric(int colour, String message)
+  {
+    System.err.println("\033[3" + colour + "m→\033[0m " + message);
+  } // End ‘printGeneric(int, String)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -227,6 +252,7 @@ public class STOMPClient implements Constants
     client.connect();
     try {Thread.sleep(100);}catch(Throwable t){t.printStackTrace();}
     //client.stomp();
+    client.close();
     client.close();
 
   } // End ‘main(String[] args)’ Method
