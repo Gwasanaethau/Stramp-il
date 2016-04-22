@@ -39,7 +39,8 @@ public class STOMPClient implements Constants
   public STOMPClient(int port)
   {
 
-    Printer.printInfo("Winding-up client and connecting to server on port " + port);
+    Printer.printInfo(
+      "Winding-up client and connecting to server on port " + port);
     this.port = port;
 
     try
@@ -52,7 +53,8 @@ public class STOMPClient implements Constants
 
     catch (UnknownHostException uhe)
     {
-      Printer.printError("‘localhost’ not recognised. Are you on Windows perchance?");
+      Printer.printError(
+        "‘localhost’ not recognised. Are you on Windows perchance?");
     } // End ‘UnknownHostException’ catch
 
     catch (IllegalArgumentException iae)
@@ -142,8 +144,9 @@ public class STOMPClient implements Constants
 
     if (socket == null || !socket.isConnected() || socket.isClosed())
     {
-      Printer.printError("Cannot send " + command + " command due to absence of a" +
-        " TCP connection. Ensure that you can connect to the server with TCP" +
+      Printer.printError("Cannot send " + command +
+        " command due to absence of a TCP connection." +
+        " Ensure that you can connect to the server with TCP" +
         " first before trying to send STOMP messages.");
       return;
     } // End if
@@ -166,7 +169,8 @@ public class STOMPClient implements Constants
 
     catch (IOException ioe)
     {
-      Printer.printError("Cannot send " + command + " command due to I/O issue.");
+      Printer.printError("Cannot send " + command +
+        " command due to I/O issue.");
       this.close();
     } // End ‘IOException’ catch
 
@@ -213,9 +217,8 @@ public class STOMPClient implements Constants
 
     STOMPClient client = new STOMPClient(51515);
     client.connect();
-    try {Thread.sleep(100);}catch(Throwable t){t.printStackTrace();}
-    //client.stomp();
-    client.close();
+    // client.stomp();
+    // try {Thread.sleep(250);}catch(Throwable t){t.printStackTrace();}
     client.close();
 
   } // End ‘main(String[] args)’ Method

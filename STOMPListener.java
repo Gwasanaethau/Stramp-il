@@ -43,44 +43,51 @@ class STOMPListener extends Thread
 
     while (active)
     {
-
-      byte[] partialMessage = new byte[1024];
-      int count = 0;
-
-      try
-      {
-        while (true)
-        {
-          byte symbol = (byte) receiver.read();
-
-          if (symbol == 0)
-            break;
-
-          partialMessage[count++] = symbol;
-        } // End while
-
-        Printer.printDebug("Message received \033[1;35m↓\n←←←\033[0m\n" +
-          new String(partialMessage, 0, count) +
-          "\033[1;35m←←←\033[0m");
-      } // End try
-
-      catch (SocketException se)
-      {
-        Printer.printInfo("Closing receiver.");
-        active = false;
-      } // End ‘SocketException’ catch
-
-      catch (IOException ioe)
-      {
-        Printer.printError("Unable to parse message.");
-        ioe.printStackTrace();
-        active = false;
-      } // End ‘IOException’ catch
-
+      listen();
     } // End while
     Printer.printDebug("Thread exited!");
 
   } // End ‘run()’ Method
+
+// ----------------------------------------- STOMPListener Class ---------------
+
+  void listen()
+  {
+
+    byte[] partialMessage = new byte[1024];
+    int count = 0;
+
+    try
+    {
+      while (true)
+      {
+        byte symbol = (byte) receiver.read();
+
+        if (symbol == 0)
+          break;
+
+        partialMessage[count++] = symbol;
+      } // End while
+
+      Printer.printDebug("Message received \033[1;35m↓\n←←←\033[0m\n" +
+        new String(partialMessage, 0, count) +
+        "\033[1;35m←←←\033[0m");
+    } // End try
+
+    catch (SocketException se)
+    {
+      Printer.printInfo("Closing receiver.");
+      active = false;
+    } // End ‘SocketException’ catch
+
+    catch (IOException ioe)
+    {
+      Printer.printError("Unable to parse message.");
+      ioe.printStackTrace();
+      active = false;
+    } // End ‘IOException’ catch
+
+  } // End ‘listen()’ Method
 
 // ----------------------------------------- STOMPListener Class ---------------
 
