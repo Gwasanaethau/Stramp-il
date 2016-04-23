@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
+import java.util.Set;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -196,7 +197,7 @@ public class STOMPClient implements Constants
       transmitter.write(stompFrame.toString().getBytes());
       Printer.printDebug("Sending command \033[1;33m↓\n→→→\033[0m\n" +
         stompFrame.toString().substring(0, stompFrame.length() - 1)
-        + "\033[1;33m→→→\033[0m");
+        + "\n\033[1;33m→→→\033[0m");
     } // End try
 
     catch (IOException ioe)
@@ -226,6 +227,26 @@ public class STOMPClient implements Constants
     Printer.printDebug("Session ID: " + sessionID);
 
   } // End ‘registerSTOMPConnection(HashMap<String, String>)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Registers response from server that an ERROR has occurred.
+   *
+   * @param headers The headers returned by the server.
+   * @param body The frame body returned by the server.
+   */
+  public void registerSTOMPError(HashMap<String, String> headers, String body)
+  {
+
+    Printer.printError("ERROR frame received.");
+    // Set<String> keys = headers.keySet();
+    // for (int i = 0; i < keys.size(); i++)
+      // printDebug("Key: " + keys.get(i))
+    Printer.printDebug("Body: " + body);
+    close();
+
+  } // End ‘registerSTOMPError(HashMap<String, String>, String body)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 

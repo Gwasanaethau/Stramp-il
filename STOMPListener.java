@@ -82,7 +82,7 @@ class STOMPListener extends Thread
 
       message = new String(partialMessage, 0, count);
       Printer.printDebug("Message received \033[1;35m↓\n←←←\033[0m\n" +
-        message + "\033[1;35m←←←\033[0m");
+        message + "\n\033[1;35m←←←\033[0m");
     } // End try
 
     catch (SocketException se)
@@ -152,6 +152,8 @@ class STOMPListener extends Thread
 
     if (command.toString().equals("CONNECTED"))
       client.registerSTOMPConnection(headers);
+    else if (command.toString().equals("ERROR"))
+      client.registerSTOMPError(headers, body.toString());
 
   } // End ‘parseMessage(String)’ Method
 
