@@ -29,7 +29,7 @@ public class STOMPClient implements Constants
   private OutputStream transmitter;
   private STOMPListener receiver;
   private boolean isSTOMPConnected, disconnectIssued;
-  private String serverName, sessionID;
+  private String serverName, sessionID, topic;
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -218,7 +218,7 @@ public class STOMPClient implements Constants
 
     } // End else
 
-  } // End ‘command(String, String, String)’ Method
+  } // End ‘genericConnect(String, String, String)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -268,6 +268,130 @@ public class STOMPClient implements Constants
     } // End else
 
   } // End ‘disconnect()’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Sends a <code>SUBSCRIBE</code> frame to the server.
+   *
+   * @param destination The destination topic to subscribe to.
+   * @param receipt Tags whether the server should acknowledge receipt of the
+   * subscription request.
+   */
+  public void subscribe(String destination, boolean receipt)
+  {
+
+    if (socket == null || !socket.isConnected() || socket.isClosed())
+    {
+      Printer.printError("Cannot send SUBSCRIBE" +
+        " frame due to absence of a TCP connection." +
+        " Ensure that you can connect to the server with TCP" +
+        " first before trying to send STOMP messages.");
+    } // End if
+    else if (disconnectIssued)
+    {
+      Printer.printError("DISCONNECT has been sent, no more STOMP frames" +
+        " are allowed to be sent!");
+    } // End else if
+    else if (!isSTOMPConnected)
+    {
+      Printer.printError("STOMP connection closed! A STOMP connection needs" +
+        " to be established first.");
+    } // End else if
+    else if (topic != null)
+    {
+      Printer.printWarning("Subscription to " + topic +
+        " already established!");
+    } // End else if
+    else
+    {
+
+      StringBuilder stompFrame = new StringBuilder(
+        "SUBSCRIBE\nid:strampáil\ndestination:" + destination + "\nack:auto\n");
+
+      if (receipt)
+        stompFrame.append("receipt:strampáil\n");
+
+      stompFrame.append("\n\0");
+
+      try
+      {
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+          stompFrame.toString().substring(0, stompFrame.length() - 1)
+          + "\n\033[1;33m→→→\033[0m");
+        topic = destination;
+      } // End try
+
+      catch (IOException ioe)
+      {
+        Printer.printError("Cannot send SUBSCRIBE frame due to I/O issue.");
+      } // End ‘IOException’ catch
+
+    } // End else
+
+  } // End ‘subscribe(String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Sends an <code>UNSUBSCRIBE</code> frame to the server.
+   *
+   * @param receipt Tags whether the server should acknowledge receipt of the
+   * unsubscription request.
+   */
+  public void unsubscribe(boolean receipt)
+  {
+
+    if (socket == null || !socket.isConnected() || socket.isClosed())
+    {
+      Printer.printError("Cannot send SUBSCRIBE" +
+        " frame due to absence of a TCP connection." +
+        " Ensure that you can connect to the server with TCP" +
+        " first before trying to send STOMP messages.");
+    } // End if
+    else if (disconnectIssued)
+    {
+      Printer.printError("DISCONNECT has been sent, no more STOMP frames" +
+        " are allowed to be sent!");
+    } // End else if
+    else if (!isSTOMPConnected)
+    {
+      Printer.printError("STOMP connection closed! A STOMP connection needs" +
+        " to be established first.");
+    } // End else if
+    else if (topic == null)
+    {
+      Printer.printWarning("No subscription present – cannot unsubscribe!");
+    } // End else if
+    else
+    {
+
+      StringBuilder stompFrame = new StringBuilder(
+        "UNSUBSCRIBE\nid:strampáil\n");
+
+      if (receipt)
+        stompFrame.append("receipt:212\n");
+
+      stompFrame.append("\n\0");
+
+      try
+      {
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+          stompFrame.toString().substring(0, stompFrame.length() - 1)
+          + "\n\033[1;33m→→→\033[0m");
+        topic = null;
+      } // End try
+
+      catch (IOException ioe)
+      {
+        Printer.printError("Cannot send UNSUBSCRIBE frame due to I/O issue.");
+      } // End ‘IOException’ catch
+
+    } // End else
+
+  } // End ‘subscribe(String)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
