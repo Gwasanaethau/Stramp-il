@@ -28,7 +28,7 @@ public class STOMPClient implements Constants
   private Socket socket;
   private OutputStream transmitter;
   private STOMPListener receiver;
-  private boolean isSTOMPConnected, disconnectIssued;
+  private boolean isSTOMPConnected, disconnectIssued, errorReceived;
   private String serverName, sessionID, topic;
 
 // ------------------------------------------- STOMPClient Class ---------------
@@ -47,6 +47,7 @@ public class STOMPClient implements Constants
     receiver = null;
     isSTOMPConnected = false;
     disconnectIssued = false;
+    errorReceived = false;
     serverName = null;
     sessionID = null;
 
@@ -109,15 +110,16 @@ public class STOMPClient implements Constants
    * Sends a STOMP 1.0 <code>CONNECT</code> frame to the server.
    *
    * @param login The login name to send to the server
-   * (can be <code>null</code>) if no login required.
+   * (can be <code>null</code> if no login required).
    * @param password The password to be sent along with the login name
-   * (can be <code>null</code>) if no login required.
+   * (can be <code>null</code> if no login required).
+   * @return Whether the connection was successfully established or not.
    * @see #stomp(String, String)
    */
-  public void connect(String login, String password)
+  public boolean connect(String login, String password)
   {
 
-    genericConnect("CONNECT", login, password);
+    return genericConnect("CONNECT", login, password);
 
   } // End ‘connect(String, String)’ Method
 
@@ -127,12 +129,13 @@ public class STOMPClient implements Constants
    * Sends a STOMP 1.0 <code>CONNECT</code> frame to the server without any
    * login details.
    *
+   * @return Whether the connection was successfully established or not.
    * @see #connect(String, String)
    */
-  public void connect()
+  public boolean connect()
   {
 
-    connect(null, null);
+    return connect(null, null);
 
   } // End ‘connect()’ Method
 
@@ -143,14 +146,15 @@ public class STOMPClient implements Constants
    * (formerly <code>CONNECT</code>) frame to the server.
    *
    * @param login The login name to send to the server
-   * (can be <code>null</code>) if no login required.
+   * (can be <code>null</code> if no login required).
    * @param password The password to be sent along with the login name
-   * (can be <code>null</code>) if no login required.
+   * (can be <code>null</code> if no login required).
+   * @return Whether the connection was successfully established or not.
    */
-  public void stomp(String login, String password)
+  public boolean stomp(String login, String password)
   {
 
-    genericConnect("STOMP", login, password);
+    return genericConnect("STOMP", login, password);
 
   } // End ‘stomp(String, String)’ Method
 
@@ -161,20 +165,22 @@ public class STOMPClient implements Constants
    * (formerly <code>CONNECT</code>) frame to the server without any
    * login details.
    *
+   * @return Whether the connection was successfully established or not.
    * @see #stomp(String, String)
    */
-  public void stomp()
+  public boolean stomp()
   {
 
-    stomp(null, null);
+    return stomp(null, null);
 
   } // End ‘stomp()’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
-  private void genericConnect(String command, String login, String password)
+  private boolean genericConnect(String command, String login, String password)
   {
 
+    boolean success = false;
     if (socket == null || !socket.isConnected() || socket.isClosed())
     {
       Printer.printError("Cannot send " + command +
@@ -208,6 +214,9 @@ public class STOMPClient implements Constants
         Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
           stompFrame.toString().substring(0, stompFrame.length() - 1)
           + "\n\033[1;33m→→→\033[0m");
+        while (!isSTOMPConnected && !errorReceived)
+          Thread.yield();
+        success = isSTOMPConnected;
       } // End try
 
       catch (IOException ioe)
@@ -217,6 +226,8 @@ public class STOMPClient implements Constants
       } // End ‘IOException’ catch
 
     } // End else
+
+    return success;
 
   } // End ‘genericConnect(String, String, String)’ Method
 
@@ -430,6 +441,7 @@ public class STOMPClient implements Constants
   public void registerSTOMPError(ArrayList<String> headers, String body)
   {
 
+    errorReceived = true;
     Printer.printError("ERROR frame received.");
 
     for (int i = 0; i < headers.size(); i++)
