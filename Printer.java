@@ -8,7 +8,7 @@ package strampáil;
  * Provides static methods for printing info to the CLI.
  *
  * @author Mark David Pokorny
- * @version Dé hAoine, 22ú Aibreán 2016
+ * @version Dé Sathairn, 23ú Aibreán 2016
  * @since Dé hAoine, 22ú Aibreán 2016
  */
 abstract class Printer
@@ -16,31 +16,39 @@ abstract class Printer
 
 // ----------------------------------------------- Printer Class ---------------
 
+  public static int debugLevel = 0;
+
+// ----------------------------------------------- Printer Class ---------------
+
   static void printDebug(String message)
   {
-    printGeneric(2, message);
+    if (debugLevel <= STOMPClient.DEBUG)
+      printGeneric(2, message);
   } // End ‘printInfo(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 
   static void printInfo(String message)
   {
-    printGeneric(4, message);
+    if (debugLevel <= STOMPClient.INFO)
+      printGeneric(4, message);
   } // End ‘printInfo(String)’ Method
-
-// ----------------------------------------------- Printer Class ---------------
-
-  static void printError(String message)
-  {
-    printGeneric(1, message);
-  } // End ‘printError(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 
   static void printWarning(String message)
   {
-    printGeneric(3, message);
+    if (debugLevel <= STOMPClient.WARNING)
+      printGeneric(3, message);
   } // End ‘printWarning(String)’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
+  static void printError(String message)
+  {
+    if (debugLevel <= STOMPClient.ERROR)
+      printGeneric(1, message);
+  } // End ‘printError(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 

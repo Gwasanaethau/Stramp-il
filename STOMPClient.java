@@ -24,6 +24,11 @@ public class STOMPClient implements Constants
 
 // ------------------------------------------- STOMPClient Class ---------------
 
+  public static final int ERROR = 3;
+  public static final int WARNING = 2;
+  public static final int INFO = 1;
+  public static final int DEBUG = 0;
+
   private int port;
   private Socket socket;
   private OutputStream transmitter;
@@ -38,10 +43,11 @@ public class STOMPClient implements Constants
    *
    * @param port The port number that the client should attempt to connect to.
    */
-  public STOMPClient(int port)
+  public STOMPClient(int port, int debugLevel)
   {
 
     this.port = port;
+    Printer.debugLevel = debugLevel;
     socket = null;
     transmitter = null;
     receiver = null;
@@ -51,7 +57,7 @@ public class STOMPClient implements Constants
     serverName = null;
     sessionID = null;
 
-  } // End ‘STOMPClient(int)’ Constructor
+  } // End ‘STOMPClient(int, int)’ Constructor
 
 // ------------------------------------------- STOMPClient Class ---------------
 
