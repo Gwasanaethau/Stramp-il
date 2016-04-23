@@ -27,4 +27,8 @@ I am currently playing around with concepts. Also, I have no experience with Jav
 
 ### Why STOMP? ###
 
-Believe it or not, this started from experimenting with STOMP feeds that a signalling simulator that I play with ([SimSig](www.simsig.co.uk)) issues when running. I realised that there isn’t much in the way of Java-based STOMP clients, especially those aimed at version 1.1 of the protocol, so I thought I would investigate making my own. Am I mad or wha’?
+Believe it or not, this started from experimenting with STOMP feeds that a signalling simulator that I play with ([SimSig](www.simsig.co.uk)) issues when running. I realised that there isn’t much in the way of Java-based STOMP clients, especially those aimed at version 1.1 of the protocol, so I thought I would investigate making my own.
+
+### Current Status ###
+
+Currently _Strampáil_ is only a STOMP client that covers enough of the protocol to interact with a SimSig server. It does not do anything with the messages it receives from the server as yet (other than printing them on the CLI).
