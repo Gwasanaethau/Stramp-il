@@ -41,7 +41,7 @@ class STOMPListener extends Thread
   public void run()
   {
 
-    Printer.printDebug("Stub listener activated!");
+    Printer.printDebug("Receiver activated!");
 
     while (active)
     {
@@ -50,7 +50,7 @@ class STOMPListener extends Thread
         parseMessage(serverMessage);
     } // End while
 
-    Printer.printDebug("Thread exited!");
+    Printer.printDebug("Receiver deactivated!");
 
   } // End ‘run()’ Method
 

@@ -105,7 +105,7 @@ public class STOMPClient implements Constants
 // ------------------------------------------- STOMPClient Class ---------------
 
   /**
-   * Sends a STOMP 1.0 <code>CONNECT</code> command to the server.
+   * Sends a STOMP 1.0 <code>CONNECT</code> frame to the server.
    *
    * @param login The login name to send to the server
    * (can be <code>null</code>) if no login required.
@@ -116,14 +116,14 @@ public class STOMPClient implements Constants
   public void connect(String login, String password)
   {
 
-    this.command("CONNECT", login, password);
+    genericConnect("CONNECT", login, password);
 
   } // End ‘connect(String, String)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
   /**
-   * Sends a STOMP 1.0 <code>CONNECT</code> command to the server without any
+   * Sends a STOMP 1.0 <code>CONNECT</code> frame to the server without any
    * login details.
    *
    * @see #connect(String, String)
@@ -131,7 +131,7 @@ public class STOMPClient implements Constants
   public void connect()
   {
 
-    this.connect(null, null);
+    connect(null, null);
 
   } // End ‘connect()’ Method
 
@@ -139,7 +139,7 @@ public class STOMPClient implements Constants
 
   /**
    * Sends a STOMP 1.1 <code>STOMP</code>
-   * (formerly <code>CONNECT</code>) command to the server.
+   * (formerly <code>CONNECT</code>) frame to the server.
    *
    * @param login The login name to send to the server
    * (can be <code>null</code>) if no login required.
@@ -149,7 +149,7 @@ public class STOMPClient implements Constants
   public void stomp(String login, String password)
   {
 
-    this.command("STOMP", login, password);
+    genericConnect("STOMP", login, password);
 
   } // End ‘stomp(String, String)’ Method
 
@@ -157,7 +157,7 @@ public class STOMPClient implements Constants
 
   /**
    * Sends a STOMP 1.1 <code>STOMP</code>
-   * (formerly <code>CONNECT</code>) command to the server without any
+   * (formerly <code>CONNECT</code>) frame to the server without any
    * login details.
    *
    * @see #stomp(String, String)
@@ -165,48 +165,97 @@ public class STOMPClient implements Constants
   public void stomp()
   {
 
-    this.stomp(null, null);
+    stomp(null, null);
 
   } // End ‘stomp()’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
-  private void command(String command, String login, String password)
+  private void genericConnect(String command, String login, String password)
   {
 
     if (socket == null || !socket.isConnected() || socket.isClosed())
     {
       Printer.printError("Cannot send " + command +
-        " command due to absence of a TCP connection." +
+        " frame due to absence of a TCP connection." +
         " Ensure that you can connect to the server with TCP" +
         " first before trying to send STOMP messages.");
-      return;
     } // End if
-
-    StringBuilder stompFrame = new StringBuilder(
-      command + "\n" + STOMP_VER + HOST_NAME);
-
-    if (login != null && password != null)
-      stompFrame.append("login:" + login + "\npasscode:" + password + "\n");
-
-    stompFrame.append("\n\0");
-
-    try
+    else if (isSTOMPConnected)
     {
-      transmitter.write(stompFrame.toString().getBytes());
-      Printer.printDebug("Sending command \033[1;33m↓\n→→→\033[0m\n" +
-        stompFrame.toString().substring(0, stompFrame.length() - 1)
-        + "\n\033[1;33m→→→\033[0m");
-    } // End try
-
-    catch (IOException ioe)
+      Printer.printWarning("STOMP connection already opened!");
+    } // End else if
+    else
     {
-      Printer.printError("Cannot send " + command +
-        " command due to I/O issue.");
-      this.close();
-    } // End ‘IOException’ catch
+
+      StringBuilder stompFrame = new StringBuilder(
+        command + "\n" + STOMP_VER + HOST_NAME);
+
+      if (login != null && password != null)
+        stompFrame.append("login:" + login + "\npasscode:" + password + "\n");
+
+      stompFrame.append("\n\0");
+
+      try
+      {
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+          stompFrame.toString().substring(0, stompFrame.length() - 1)
+          + "\n\033[1;33m→→→\033[0m");
+      } // End try
+
+      catch (IOException ioe)
+      {
+        Printer.printError("Cannot send " + command +
+          " frame due to I/O issue.");
+      } // End ‘IOException’ catch
+
+    } // End else
 
   } // End ‘command(String, String, String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Sends a <code>DISCONNECT</code> frame to the server.
+   */
+  public void disconnect()
+  {
+
+    if (socket == null || !socket.isConnected() || socket.isClosed())
+    {
+      Printer.printError("Cannot send DISCONNECT" +
+        " frame due to absence of a TCP connection." +
+        " Ensure that you can connect to the server with TCP" +
+        " first before trying to send STOMP messages.");
+    } // End if
+    else if (!isSTOMPConnected)
+    {
+      Printer.printWarning("STOMP connection already closed!");
+    } // End else if
+    else
+    {
+
+      String stompFrame = "DISCONNECT\nreceipt:strampáilDisconnect\n\n\0";
+
+      try
+      {
+        transmitter.write(stompFrame.getBytes());
+        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+          stompFrame.substring(0, stompFrame.length() - 1)
+          + "\n\033[1;33m→→→\033[0m");
+      } // End try
+
+      catch (IOException ioe)
+      {
+        Printer.printError("Cannot send DISCONNECT frame due to I/O issue.");
+      } // End ‘IOException’ catch
+
+      isSTOMPConnected = false;
+
+    } // End else
+
+  } // End ‘disconnect()’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -251,7 +300,6 @@ public class STOMPClient implements Constants
       Printer.printDebug("Header: " + headers.get(i));
 
     Printer.printDebug("Body: " + body);
-    close();
 
   } // End ‘registerSTOMPError(ArrayList<String>, String body)’ Method
 
@@ -263,7 +311,7 @@ public class STOMPClient implements Constants
   public void close()
   {
 
-    if (socket != null && !socket.isClosed())
+    if (socket != null && !socket.isClosed() && isSTOMPConnected)
     {
       Printer.printInfo("Disconnecting from server.");
 
