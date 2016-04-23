@@ -4,7 +4,7 @@ package strampáil;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.HashMap;
+import java.util.ArrayList;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -116,29 +116,20 @@ class STOMPListener extends Thread
       command.append(character);
     } // End while
 
-    HashMap<String, String> headers = new HashMap<String, String>();
+    ArrayList<String> headers = new ArrayList<String>();
     while (true)
     {
-      StringBuilder key = new StringBuilder();
-      while (true)
-      {
-        char character = message.charAt(index);
-        if (character == ':' || character == '\n')
-          break;
-        key.append(character);
-        index++;
-      } // End while
-      StringBuilder value = new StringBuilder();
+      StringBuilder header = new StringBuilder();
       while (true)
       {
         char character = message.charAt(index++);
         if (character == '\n')
           break;
-        value.append(character);
+        header.append(character);
       } // End while
-      if (key.length() == 0) // i.e. Two \n’s received in a row…
+      if (header.length() == 0) // i.e. Two \n’s received in a row…
         break;
-      headers.put(key.toString(), value.toString());
+      headers.add(header.toString());
     } // End while
 
     StringBuilder body = new StringBuilder();

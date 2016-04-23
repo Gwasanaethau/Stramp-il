@@ -6,8 +6,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.Set;
+import java.util.ArrayList;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -216,17 +215,24 @@ public class STOMPClient implements Constants
    *
    * @param headers The headers returned by the server.
    */
-  public void registerSTOMPConnection(HashMap<String, String> headers)
+  public void registerSTOMPConnection(ArrayList<String> headers)
   {
 
-    serverName = headers.get("server");
-    sessionID = headers.get("session");
+    for (int i = 0; i < headers.size(); i++)
+    {
+      String header = headers.get(i);
+      if (header.startsWith("server"))
+        serverName = header.substring(header.indexOf(":") + 1);
+      else if (header.startsWith("session"))
+        sessionID = header.substring(header.indexOf(":") + 1);
+    } // End for
+
     isSTOMPConnected = true;
     Printer.printInfo("STOMP connection established.");
     Printer.printDebug("Server Name: " + serverName);
     Printer.printDebug("Session ID: " + sessionID);
 
-  } // End ‘registerSTOMPConnection(HashMap<String, String>)’ Method
+  } // End ‘registerSTOMPConnection(ArrayList<String>)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -236,17 +242,18 @@ public class STOMPClient implements Constants
    * @param headers The headers returned by the server.
    * @param body The frame body returned by the server.
    */
-  public void registerSTOMPError(HashMap<String, String> headers, String body)
+  public void registerSTOMPError(ArrayList<String> headers, String body)
   {
 
     Printer.printError("ERROR frame received.");
-    // Set<String> keys = headers.keySet();
-    // for (int i = 0; i < keys.size(); i++)
-      // printDebug("Key: " + keys.get(i))
+
+    for (int i = 0; i < headers.size(); i++)
+      Printer.printDebug("Header: " + headers.get(i));
+
     Printer.printDebug("Body: " + body);
     close();
 
-  } // End ‘registerSTOMPError(HashMap<String, String>, String body)’ Method
+  } // End ‘registerSTOMPError(ArrayList<String>, String body)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 
