@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -15,7 +16,7 @@ import java.net.UnknownHostException;
  * with version 1.1 of the STOMP protocol.
  *
  * @author Mark David Pokorny
- * @version Dé hAoine, 22ú Aibreán 2016
+ * @version Dé Sathairn, 23ú Aibreán 2016
  * @since Déardaoin, 21ú Aibreán 2016
  */
 public class STOMPClient implements Constants
@@ -27,6 +28,8 @@ public class STOMPClient implements Constants
   private Socket socket;
   private OutputStream transmitter;
   private STOMPListener receiver;
+  private boolean isSTOMPConnected;
+  private String serverName, sessionID;
 
 // ------------------------------------------- STOMPClient Class ---------------
 
@@ -42,6 +45,9 @@ public class STOMPClient implements Constants
     socket = null;
     transmitter = null;
     receiver = null;
+    isSTOMPConnected = false;
+    serverName = null;
+    sessionID = null;
 
   } // End ‘STOMPClient(int)’ Constructor
 
@@ -69,7 +75,7 @@ public class STOMPClient implements Constants
     try
     {
       socket = new Socket("localhost", port);
-      receiver = new STOMPListener(socket.getInputStream());
+      receiver = new STOMPListener(socket.getInputStream(), this);
       receiver.start();
       transmitter = socket.getOutputStream();
       success = true;
@@ -201,6 +207,25 @@ public class STOMPClient implements Constants
     } // End ‘IOException’ catch
 
   } // End ‘command(String, String, String)’ Method
+
+// ------------------------------------------- STOMPClient Class ---------------
+
+  /**
+   * Confirms response from server that STOMP connection has been established.
+   *
+   * @param headers The headers returned by the server.
+   */
+  public void registerSTOMPConnection(HashMap<String, String> headers)
+  {
+
+    serverName = headers.get("server");
+    sessionID = headers.get("session");
+    isSTOMPConnected = true;
+    Printer.printInfo("STOMP connection established.");
+    Printer.printDebug("Server Name: " + serverName);
+    Printer.printDebug("Session ID: " + sessionID);
+
+  } // End ‘registerSTOMPConnection(HashMap<String, String>)’ Method
 
 // ------------------------------------------- STOMPClient Class ---------------
 

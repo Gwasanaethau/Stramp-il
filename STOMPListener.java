@@ -4,7 +4,7 @@ package strampáil;
 import java.io.InputStream;
 import java.io.IOException;
 import java.net.SocketException;
-import java.util.ArrayList;
+import java.util.HashMap;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -23,13 +23,15 @@ class STOMPListener extends Thread
 
   private InputStream receiver;
   private boolean active;
+  private STOMPClient client;
 
 // ----------------------------------------- STOMPListener Class ---------------
 
-  STOMPListener(InputStream receiver)
+  STOMPListener(InputStream receiver, STOMPClient client)
   {
 
     this.receiver = receiver;
+    this.client = client;
     active = true;
 
   } // End ‘STOMPListener(InputStream)’ Constructor
@@ -43,7 +45,9 @@ class STOMPListener extends Thread
 
     while (active)
     {
-      listen();
+      String serverMessage = listen();
+      if (serverMessage != null)
+        parseMessage(serverMessage);
     } // End while
 
     Printer.printDebug("Thread exited!");
@@ -52,7 +56,7 @@ class STOMPListener extends Thread
 
 // ----------------------------------------- STOMPListener Class ---------------
 
-  String listen()
+  private String listen()
   {
 
     byte[] partialMessage = new byte[1024];
@@ -97,6 +101,59 @@ class STOMPListener extends Thread
     return message;
 
   } // End ‘listen()’ Method
+
+// ----------------------------------------- STOMPListener Class ---------------
+
+  private void parseMessage(String message)
+  {
+    StringBuilder command = new StringBuilder();
+    int index = 0;
+    while (true)
+    {
+      char character = message.charAt(index++);
+      if (character == '\n')
+        break;
+      command.append(character);
+    } // End while
+
+    HashMap<String, String> headers = new HashMap<String, String>();
+    while (true)
+    {
+      StringBuilder key = new StringBuilder();
+      while (true)
+      {
+        char character = message.charAt(index);
+        if (character == ':' || character == '\n')
+          break;
+        key.append(character);
+        index++;
+      } // End while
+      StringBuilder value = new StringBuilder();
+      while (true)
+      {
+        char character = message.charAt(index++);
+        if (character == '\n')
+          break;
+        value.append(character);
+      } // End while
+      if (key.length() == 0) // i.e. Two \n’s received in a row…
+        break;
+      headers.put(key.toString(), value.toString());
+    } // End while
+
+    StringBuilder body = new StringBuilder();
+    while (true)
+    {
+      if (index >= message.length())
+        break;
+      char character = message.charAt(index++);
+      body.append(character);
+    } // End while
+
+    if (command.toString().equals("CONNECTED"))
+      client.registerSTOMPConnection(headers);
+
+  } // End ‘parseMessage(String)’ Method
 
 // ----------------------------------------- STOMPListener Class ---------------
 
