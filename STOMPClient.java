@@ -28,7 +28,7 @@ public class STOMPClient implements Constants
   private Socket socket;
   private OutputStream transmitter;
   private STOMPListener receiver;
-  private boolean isSTOMPConnected;
+  private boolean isSTOMPConnected, disconnectIssued;
   private String serverName, sessionID;
 
 // ------------------------------------------- STOMPClient Class ---------------
@@ -46,6 +46,7 @@ public class STOMPClient implements Constants
     transmitter = null;
     receiver = null;
     isSTOMPConnected = false;
+    disconnectIssued = false;
     serverName = null;
     sessionID = null;
 
@@ -181,6 +182,11 @@ public class STOMPClient implements Constants
         " Ensure that you can connect to the server with TCP" +
         " first before trying to send STOMP messages.");
     } // End if
+    else if (disconnectIssued)
+    {
+      Printer.printError("DISCONNECT has been sent, no more STOMP frames" +
+        " are allowed to be sent!");
+    } // End else if
     else if (isSTOMPConnected)
     {
       Printer.printWarning("STOMP connection already opened!");
@@ -229,6 +235,11 @@ public class STOMPClient implements Constants
         " Ensure that you can connect to the server with TCP" +
         " first before trying to send STOMP messages.");
     } // End if
+    else if (disconnectIssued)
+    {
+      Printer.printError("DISCONNECT has been sent, no more STOMP frames" +
+        " are allowed to be sent!");
+    } // End else if
     else if (!isSTOMPConnected)
     {
       Printer.printWarning("STOMP connection already closed!");
@@ -252,6 +263,7 @@ public class STOMPClient implements Constants
       } // End ‘IOException’ catch
 
       isSTOMPConnected = false;
+      disconnectIssued = true;
 
     } // End else
 
