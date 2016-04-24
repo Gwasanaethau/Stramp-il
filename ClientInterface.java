@@ -29,7 +29,7 @@ public class ClientInterface implements Constants
   private OutputStream transmitter;
   private ClientReceiver receiver;
   private boolean isSTOMPConnected, disconnectIssued, errorReceived;
-  private String address, topic;
+  private String address, topic, id;
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -55,6 +55,8 @@ public class ClientInterface implements Constants
     isSTOMPConnected = false;
     disconnectIssued = false;
     errorReceived = false;
+    topic = null;
+    id = "strampáil";
 
   } // End ‘ClientInterface(String, int, int)’ Constructor
 
@@ -324,8 +326,25 @@ public class ClientInterface implements Constants
    * @param topic The destination topic to subscribe to.
    * @param receipt Tags whether the server should acknowledge receipt of the
    * subscription request.
+   * @see #subscribe(String, String, boolean)
    */
   public void subscribe(String topic, boolean receipt)
+  {
+    subscribe(topic, null, receipt);
+  } // End ‘subscribe(String, boolean)’ Method
+
+// --------------------------------------- ClientInterface Class ---------------
+
+  /**
+   * Sends a <code>SUBSCRIBE</code> frame to the server.
+   *
+   * @param topic The destination topic to subscribe to.
+   * @param id The name this client should reveal itself as.
+   * If blank or <code>null</code>, a default will be used.
+   * @param receipt Tags whether the server should acknowledge receipt of the
+   * subscription request.
+   */
+  public void subscribe(String topic, String id, boolean receipt)
   {
 
     if (socket == null || !socket.isConnected() || socket.isClosed())
@@ -340,8 +359,11 @@ public class ClientInterface implements Constants
     else
     {
 
+      if (id != null && !id.equals(""))
+        this.id = id;
+
       StringBuilder stompFrame = new StringBuilder(
-        "SUBSCRIBE\nid:strampáil\ndestination:" + topic + "\nack:auto\n");
+        "SUBSCRIBE\nid:" + this.id + "\ndestination:" + topic + "\nack:auto\n");
 
       if (receipt)
         stompFrame.append("receipt:subscribe-" + sequenceNumber + "\n");
@@ -369,7 +391,7 @@ public class ClientInterface implements Constants
 
     } // End else
 
-  } // End ‘subscribe(String)’ Method
+  } // End ‘subscribe(String, boolean)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -394,7 +416,7 @@ public class ClientInterface implements Constants
     {
 
       StringBuilder stompFrame = new StringBuilder(
-        "UNSUBSCRIBE\nid:strampáil\n");
+        "UNSUBSCRIBE\nid:" + id + "\n");
 
       if (receipt)
         stompFrame.append("receipt:unsubscribe-" + sequenceNumber + "\n");
@@ -422,7 +444,7 @@ public class ClientInterface implements Constants
 
     } // End else
 
-  } // End ‘unsubscribe(String)’ Method
+  } // End ‘unsubscribe(boolean)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -476,7 +498,7 @@ public class ClientInterface implements Constants
 
     } // End else
 
-  } // End ‘send(String)’ Method
+  } // End ‘send(String, boolean)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 
