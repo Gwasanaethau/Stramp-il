@@ -412,6 +412,52 @@ public class ClientInterface implements Constants
 
 // --------------------------------------- ClientInterface Class ---------------
 
+  /**
+   * Sends a <code>SEND</code> frame to the server.
+   *
+   * @param message The message to be sent to the server. This must be encoded
+   * in UTF-8 format.
+   * @param receipt Tags whether the server should acknowledge receipt of the
+   * message sent.
+   */
+  public void send(String message, boolean receipt)
+  {
+
+    if (socket == null || !socket.isConnected() || socket.isClosed())
+      Printer.printTCPError("SEND");
+    else if (disconnectIssued)
+      Printer.printDisconnectError();
+    else if (!isSTOMPConnected)
+      Printer.printSTOMPError();
+    else if (topic == null)
+      Printer.printError("No subscription present – cannot send message!");
+    else
+    {
+
+      String stompFrame = "SEND\ndestination:" + topic +
+        "\ncontent-type:text/plain\ncontent-length:" +
+        message.getBytes().length + "\n\n" + message + "\0";
+
+      try
+      {
+        transmitter.write(stompFrame.getBytes());
+        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+          stompFrame.substring(0, stompFrame.length() - 1)
+          + "\n\033[1;33m→→→\033[0m");
+        // FIXME: Wait for ACK before continuing if receipt == true!
+      } // End try
+
+      catch (IOException ioe)
+      {
+        Printer.printIOError("SEND");
+      } // End ‘IOException’ catch
+
+    } // End else
+
+  } // End ‘send(String)’ Method
+
+// --------------------------------------- ClientInterface Class ---------------
+
 // ============================== Server Acknowledgement Methods ===============
 
 // --------------------------------------- ClientInterface Class ---------------

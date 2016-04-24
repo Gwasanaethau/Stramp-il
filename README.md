@@ -38,6 +38,7 @@ Strampáil covers basic parts of STOMP version 1.1. Specifically, it can send:
 - DISCONNECT;
 - SUBSCRIBE (autoack only, preset ID only);
 - UNSUBSCRIBE (preset ID only);
+- SEND (without receipt requests);
 
 It can deal with direct responses (such as CONNECTED, ERROR and RECEIPT) appropriately. It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present.
 
