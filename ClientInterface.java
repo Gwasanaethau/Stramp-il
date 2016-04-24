@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -31,6 +31,8 @@ public class ClientInterface implements Constants
   private ClientReceiver receiver;
   private boolean isSTOMPConnected, disconnectIssued, errorReceived;
   private String address, topic, id;
+  private ConcurrentLinkedQueue<String> messageRepository;
+  private Notifier notifier;
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -41,13 +43,18 @@ public class ClientInterface implements Constants
    * should attempt to connect to. This can be a host name or an IP address.
    * @param port The port number that this client should attempt to connect to.
    * @param debugLevel The verbosity level of messages displayed by this client.
+   * @param notifier The <code>Notifier</code> to be notified when the client
+   * receives a message (can be <code>null</code>).
    */
-  public ClientInterface(String address, int port, int debugLevel)
+  public ClientInterface(
+    String address, int port, int debugLevel, Notifier notifier)
   {
 
     this.address = address;
     this.port = port;
     Printer.debugLevel = debugLevel;
+    this.notifier = notifier;
+
     sequenceNumber = 1;
     sequenceReceived = 0;
     socket = null;
@@ -58,8 +65,9 @@ public class ClientInterface implements Constants
     errorReceived = false;
     topic = null;
     id = "strampáil";
+    messageRepository = new ConcurrentLinkedQueue<String>();
 
-  } // End ‘ClientInterface(String, int, int)’ Constructor
+  } // End ‘ClientInterface(String, int, int, Notifier)’ Constructor
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -151,6 +159,18 @@ public class ClientInterface implements Constants
       Printer.printWarning("Connection already closed!");
 
   } // End ‘close()’ Method
+
+// --------------------------------------- ClientInterface Class ---------------
+
+  /**
+   * Retrieves the first message from the repository (if any).
+   *
+   * @return The message (<code>null</code> if no messages found).
+   */
+  public String retrieveMessage()
+  {
+    return messageRepository.poll();
+  } // End ‘retrieveMessage()’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -541,12 +561,15 @@ public class ClientInterface implements Constants
 // --------------------------------------- ClientInterface Class ---------------
 
   /**
-   * Registers receipt of a <code>MESSAGE</code> frame.
+   * Registers receipt of a <code>MESSAGE</code> frame. The message is stored
+   * in the retrieval system and the {@link Notifier} alerted.
    */
-  void notifyMessage(HashMap<String, String> headers, String message)
+  void notifyMessage(String message)
   {
-    System.out.println(message);
-  } // End ‘notifyMessage(HashMap<String, String>, String)’ Method
+    messageRepository.add(message);
+    if (notifier != null)
+      notifier.alert();
+  } // End ‘notifyMessage(String)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 

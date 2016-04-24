@@ -163,7 +163,7 @@ class ClientReceiver extends Thread
       client.notifyReceipt(sequenceNumber);
     } // End else if
     else if (command.equals("MESSAGE"))
-      client.notifyMessage(headers, body);
+      client.notifyMessage(body);
 
   } // End ‘notifyClient(String, HashMap<String, String>, String)’ Method
 
