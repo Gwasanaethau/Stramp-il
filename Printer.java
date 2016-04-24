@@ -8,7 +8,7 @@ package strampáil;
  * Provides static methods for printing info to the CLI.
  *
  * @author Mark David Pokorny
- * @version Dé Sathairn, 23ú Aibreán 2016
+ * @version Dé Domhnaigh, 24ú Aibreán 2016
  * @since Dé hAoine, 22ú Aibreán 2016
  */
 abstract class Printer implements Constants
@@ -81,6 +81,14 @@ abstract class Printer implements Constants
   {
     Printer.printError("Cannot send " + command + " frame due to I/O issue.");
   } // End ‘printIOError(String)’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
+  static void printSTOMPError()
+  {
+    Printer.printError("STOMP connection closed! A STOMP connection needs" +
+      " to be established first.");
+  } // End ‘printSTOMPError(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 

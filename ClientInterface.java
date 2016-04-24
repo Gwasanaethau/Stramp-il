@@ -325,8 +325,7 @@ public class ClientInterface implements Constants
     else if (disconnectIssued)
       Printer.printDisconnectError();
     else if (!isSTOMPConnected)
-      Printer.printError("STOMP connection closed! A STOMP connection needs" +
-        " to be established first.");
+      Printer.printSTOMPError();
     else if (this.topic != null)
       Printer.printWarning("Subscription to " + this.topic +
         " already established!");
@@ -377,8 +376,7 @@ public class ClientInterface implements Constants
     else if (disconnectIssued)
       Printer.printDisconnectError();
     else if (!isSTOMPConnected)
-      Printer.printError("STOMP connection closed! A STOMP connection needs" +
-        " to be established first.");
+      Printer.printSTOMPError();
     else if (topic == null)
       Printer.printWarning("No subscription present – cannot unsubscribe!");
     else
