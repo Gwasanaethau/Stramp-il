@@ -11,7 +11,7 @@ package strampáil;
  * @version Dé Sathairn, 23ú Aibreán 2016
  * @since Dé hAoine, 22ú Aibreán 2016
  */
-abstract class Printer
+abstract class Printer implements Constants
 {
 
 // ----------------------------------------------- Printer Class ---------------
@@ -22,7 +22,7 @@ abstract class Printer
 
   static void printDebug(String message)
   {
-    if (debugLevel <= STOMPClient.DEBUG)
+    if (debugLevel <= DEBUG)
       printGeneric(2, message);
   } // End ‘printInfo(String)’ Method
 
@@ -30,7 +30,7 @@ abstract class Printer
 
   static void printInfo(String message)
   {
-    if (debugLevel <= STOMPClient.INFO)
+    if (debugLevel <= INFO)
       printGeneric(4, message);
   } // End ‘printInfo(String)’ Method
 
@@ -38,7 +38,7 @@ abstract class Printer
 
   static void printWarning(String message)
   {
-    if (debugLevel <= STOMPClient.WARNING)
+    if (debugLevel <= WARNING)
       printGeneric(3, message);
   } // End ‘printWarning(String)’ Method
 
@@ -46,16 +46,41 @@ abstract class Printer
 
   static void printError(String message)
   {
-    if (debugLevel <= STOMPClient.ERROR)
+    if (debugLevel <= ERROR)
       printGeneric(1, message);
   } // End ‘printError(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 
-  private synchronized static void printGeneric(int colour, String message)
+  private static void printGeneric(int colour, String message)
   {
     System.err.println("\033[3" + colour + "m→\033[0m " + message);
   } // End ‘printGeneric(int, String)’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
+  static void printTCPError(String command)
+  {
+    Printer.printError("Cannot send " + command +
+      " frame due to absence of a TCP connection." +
+      " Ensure that you can connect to the server with TCP" +
+      " first before trying to send STOMP messages.");
+  } // End ‘printTCPError(String)’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
+  static void printDisconnectError()
+  {
+    Printer.printError("DISCONNECT has been issued," +
+      " no more STOMP frames are allowed to be sent!");
+  } // End ‘printDisconnectError()’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
+  static void printIOError(String command)
+  {
+    Printer.printError("Cannot send " + command + " frame due to I/O issue.");
+  } // End ‘printIOError(String)’ Method
 
 // ----------------------------------------------- Printer Class ---------------
 
