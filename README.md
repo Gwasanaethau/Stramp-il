@@ -31,4 +31,14 @@ Believe it or not, this started from experimenting with STOMP feeds that a signa
 
 ### Current Status ###
 
-Currently _Strampáil_ is only a STOMP client that covers enough of the protocol to interact with a SimSig server. It does not do anything with the messages it receives from the server as yet (other than printing them on the CLI).
+Only the client is implemented at the moment.
+Strampáil covers basic parts of STOMP version 1.1. Specifically, it can send:
+
+- CONNECT/STOMP;
+- DISCONNECT;
+- SUBSCRIBE (autoack only, preset ID only);
+- UNSUBSCRIBE (preset ID only);
+
+It can deal with direct responses (such as CONNECTED, ERROR and RECEIPT) appropriately. It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present.
+
+Other than direct replies to frames as mentioned above, Strampáil will, at present, merely print out any frame it receives from the server to the CLI if the debug messaging level is set to DEBUG. It does not currently do any (useful) processing on them.
