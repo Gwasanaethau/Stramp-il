@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -536,6 +537,16 @@ public class ClientInterface implements Constants
     while (sequenceReceived != 0)
       Thread.yield();
   } // End ‘notifyReceipt()’ Method
+
+// --------------------------------------- ClientInterface Class ---------------
+
+  /**
+   * Registers receipt of a <code>MESSAGE</code> frame.
+   */
+  void notifyMessage(HashMap<String, String> headers, String message)
+  {
+    System.out.println(message);
+  } // End ‘notifyMessage(HashMap<String, String>, String)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 

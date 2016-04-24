@@ -162,6 +162,8 @@ class ClientReceiver extends Thread
         receiptID.substring(receiptID.lastIndexOf('-') + 1));
       client.notifyReceipt(sequenceNumber);
     } // End else if
+    else if (command.equals("MESSAGE"))
+      client.notifyMessage(headers, body);
 
   } // End ‘notifyClient(String, HashMap<String, String>, String)’ Method
 

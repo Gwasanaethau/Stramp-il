@@ -38,8 +38,14 @@ Strampáil covers basic parts of STOMP version 1.1. Specifically, it can send:
 - DISCONNECT;
 - SUBSCRIBE (autoack only);
 - UNSUBSCRIBE;
-- SEND;
+- SEND.
 
-It can deal with direct responses (such as CONNECTED, ERROR and RECEIPT) appropriately. It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present.
+It can deal with server responses, specifically:
+- CONNECTED;
+- ERROR;
+- RECEIPT;
+- MESSAGE.
+
+It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present.
 
 Strampáil will, at present, merely print out any MESSAGE frame it receives from the server to the CLI if the debug messaging level is set to DEBUG. It does not currently do any (useful) processing on them. In addition, the current algorithm for extracting frame body data will fail if there are NUL bytes in the body.
