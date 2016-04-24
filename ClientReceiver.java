@@ -155,9 +155,13 @@ class ClientReceiver extends Thread
       client.notifyConnected();
     else if (command.equals("ERROR"))
       client.notifyError();
-    else if (command.equals("RECEIPT") &&
-      headers.get("receipt-id").equals("strampáilDisconnect"))
-        client.notifyDisconnected();
+    else if (command.equals("RECEIPT"))
+    {
+      String receiptID = headers.get("receipt-id");
+      int sequenceNumber = Integer.parseInt(
+        receiptID.substring(receiptID.lastIndexOf('-') + 1));
+      client.notifyReceipt(sequenceNumber);
+    } // End else if
 
   } // End ‘notifyClient(String, HashMap<String, String>, String)’ Method
 

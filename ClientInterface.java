@@ -24,7 +24,7 @@ public class ClientInterface implements Constants
 
 // --------------------------------------- ClientInterface Class ---------------
 
-  private int port;
+  private int port, sequenceNumber, sequenceReceived;
   private Socket socket;
   private OutputStream transmitter;
   private ClientReceiver receiver;
@@ -47,6 +47,8 @@ public class ClientInterface implements Constants
     this.address = address;
     this.port = port;
     Printer.debugLevel = debugLevel;
+    sequenceNumber = 1;
+    sequenceReceived = 0;
     socket = null;
     transmitter = null;
     receiver = null;
@@ -250,13 +252,15 @@ public class ClientInterface implements Constants
 
       try
       {
+
         transmitter.write(stompFrame.toString().getBytes());
-        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
-          stompFrame.toString().substring(0, stompFrame.length() - 1)
-          + "\n\033[1;33m→→→\033[0m");
+        Printer.printSendFrame(
+          stompFrame.toString().substring(0, stompFrame.length() - 1));
+
         while (!isSTOMPConnected && !errorReceived)
           Thread.yield();
         success = isSTOMPConnected;
+
       } // End try
 
       catch (IOException ioe)
@@ -287,16 +291,20 @@ public class ClientInterface implements Constants
     else
     {
 
-      String stompFrame = "DISCONNECT\nreceipt:strampáilDisconnect\n\n\0";
+      String stompFrame = "DISCONNECT\nreceipt:disconnect-" +
+        sequenceNumber + "\n\n\0";
 
       try
       {
+
         transmitter.write(stompFrame.getBytes());
-        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
-          stompFrame.substring(0, stompFrame.length() - 1)
-          + "\n\033[1;33m→→→\033[0m");
-        while (isSTOMPConnected && !errorReceived)
-          Thread.yield();
+        Printer.printSendFrame(
+          stompFrame.substring(0, stompFrame.length() - 1));
+
+        waitForReceipt();
+        isSTOMPConnected = false;
+        disconnectIssued = true;
+
       } // End try
 
       catch (IOException ioe)
@@ -336,19 +344,22 @@ public class ClientInterface implements Constants
         "SUBSCRIBE\nid:strampáil\ndestination:" + topic + "\nack:auto\n");
 
       if (receipt)
-        stompFrame.append("receipt:strampáil\n");
+        stompFrame.append("receipt:subscribe-" + sequenceNumber + "\n");
 
       stompFrame.append("\n\0");
 
       try
       {
-        transmitter.write(stompFrame.toString().getBytes());
-        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
-          stompFrame.toString().substring(0, stompFrame.length() - 1)
-          + "\n\033[1;33m→→→\033[0m");
 
-        // FIXME: Wait for ACK before continuing if receipt == true!
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printSendFrame(
+          stompFrame.toString().substring(0, stompFrame.length() - 1));
+
+        if (receipt)
+          waitForReceipt();
+
         this.topic = topic;
+
       } // End try
 
       catch (IOException ioe)
@@ -386,19 +397,22 @@ public class ClientInterface implements Constants
         "UNSUBSCRIBE\nid:strampáil\n");
 
       if (receipt)
-        stompFrame.append("receipt:strampáil\n");
+        stompFrame.append("receipt:unsubscribe-" + sequenceNumber + "\n");
 
       stompFrame.append("\n\0");
 
       try
       {
-        transmitter.write(stompFrame.toString().getBytes());
-        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
-          stompFrame.toString().substring(0, stompFrame.length() - 1)
-          + "\n\033[1;33m→→→\033[0m");
 
-        // FIXME: Wait for ACK before continuing if receipt == true!
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printSendFrame(
+          stompFrame.toString().substring(0, stompFrame.length() - 1));
+
+        if (receipt)
+          waitForReceipt();
+
         topic = null;
+
       } // End try
 
       catch (IOException ioe)
@@ -434,17 +448,25 @@ public class ClientInterface implements Constants
     else
     {
 
-      String stompFrame = "SEND\ndestination:" + topic +
-        "\ncontent-type:text/plain\ncontent-length:" +
-        message.getBytes().length + "\n\n" + message + "\0";
+      StringBuilder stompFrame = new StringBuilder("SEND\ndestination:" +
+        topic + "\ncontent-type:text/plain\ncontent-length:" +
+        message.getBytes().length + "\n");
+
+        if (receipt)
+          stompFrame.append("receipt:send-" + sequenceNumber + "\n");
+
+        stompFrame.append("\n" + message + "\0");
 
       try
       {
-        transmitter.write(stompFrame.getBytes());
-        Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
-          stompFrame.substring(0, stompFrame.length() - 1)
-          + "\n\033[1;33m→→→\033[0m");
-        // FIXME: Wait for ACK before continuing if receipt == true!
+
+        transmitter.write(stompFrame.toString().getBytes());
+        Printer.printSendFrame(
+          stompFrame.toString().substring(0, stompFrame.length() - 1));
+
+        if (receipt)
+          waitForReceipt();
+
       } // End try
 
       catch (IOException ioe)
@@ -484,14 +506,33 @@ public class ClientInterface implements Constants
 // --------------------------------------- ClientInterface Class ---------------
 
   /**
-   * Registers receipt of an <code>RECEIPT</code> frame,
-   * with specific reference to a disconnection.
+   * Registers receipt of a <code>RECEIPT</code> frame.
    */
-  void notifyDisconnected()
+  void notifyReceipt(int sequenceNumber)
   {
-    isSTOMPConnected = false;
-    disconnectIssued = true;
-  } // End ‘notifyDisconnected()’ Method
+    sequenceReceived = sequenceNumber;
+    while (sequenceReceived != 0)
+      Thread.yield();
+  } // End ‘notifyReceipt()’ Method
+
+// --------------------------------------- ClientInterface Class ---------------
+
+// ====================================== Private Helper Methods ===============
+
+// --------------------------------------- ClientInterface Class ---------------
+
+  private void waitForReceipt()
+  {
+
+    Printer.printInfo("Waiting for receipt " + sequenceNumber + ".");
+    while (sequenceReceived != sequenceNumber && !errorReceived)
+      Thread.yield();
+
+    Printer.printInfo("Receipt " + sequenceNumber + " received.");
+    sequenceNumber++;
+    sequenceReceived = 0;
+
+  } // End ‘waitForReceipt()’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 

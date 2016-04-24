@@ -92,6 +92,14 @@ abstract class Printer implements Constants
 
 // ----------------------------------------------- Printer Class ---------------
 
+  static void printSendFrame(String frame)
+  {
+    Printer.printDebug("Sending frame \033[1;33m↓\n→→→\033[0m\n" +
+      frame + "\n\033[1;33m→→→\033[0m");
+  } // End ‘printSendFrame(String)’ Method
+
+// ----------------------------------------------- Printer Class ---------------
+
 } // End ‘Printer’ Class
 
 // +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
