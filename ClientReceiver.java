@@ -111,7 +111,7 @@ class ClientReceiver extends Thread
 
 // ---------------------------------------- ClientReceiver Class ---------------
 
-  private void parseFrame()
+  private void parseFrame(String frame)
   {
     int indexOfLastNewline = frame.indexOf('\n');
     String command = frame.substring(0, indexOfLastNewline);
@@ -142,7 +142,7 @@ class ClientReceiver extends Thread
 
     notifyClient(command, headers, body);
 
-  } // End ‘run()’ Method
+  } // End ‘parseFrame(String)’ Method
 
 // ---------------------------------------- ClientReceiver Class ---------------
 
