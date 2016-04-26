@@ -12,7 +12,7 @@ package strampáil;
  * presence of <code>MESSAGE</code>s in the retrieval system.
  *
  * @author Mark David Pokorny
- * @version Dé Domhnaigh, 24ú Aibreán 2016
+ * @version Dé Máirt, 26ú Aibreán 2016
  * @since Dé Domhnaigh, 24ú Aibreán 2016
  */
 public interface Notifier
@@ -22,7 +22,9 @@ public interface Notifier
 
   /**
    * This method is triggered whenever a <code>MESSAGE</code>
-   * arrives from the server.
+   * arrives from the server. It may be wise to start a new {@link Thread}
+   * to do any heavy processing within this method as the calling of this
+   * method blocks the listener until this method returns.
    */
   void alert();
 
