@@ -8,19 +8,29 @@ package strampáil;
  * Provides static methods for printing info to the CLI.
  *
  * @author Mark David Pokorny
- * @version Dé Domhnaigh, 24ú Aibreán 2016
+ * @version Dé Céadaoin, 27ú Aibreán 2016
  * @since Dé hAoine, 22ú Aibreán 2016
  */
-abstract class Printer implements Constants
+public abstract class Printer implements Constants
 {
 
 // ----------------------------------------------- Printer Class ---------------
 
+  /** The level of debug information to be displayed. */
   public static int debugLevel = 0;
 
 // ----------------------------------------------- Printer Class ---------------
 
-  static void printDebug(String message)
+  private Printer(){}
+
+// ----------------------------------------------- Printer Class ---------------
+
+  /**
+   * Prints a debug message to the CLI (if debug level set).
+   *
+   * @param message The message to be printed.
+   */
+  public static void printDebug(String message)
   {
     if (debugLevel <= DEBUG)
       printGeneric(2, message);
@@ -28,7 +38,12 @@ abstract class Printer implements Constants
 
 // ----------------------------------------------- Printer Class ---------------
 
-  static void printInfo(String message)
+  /**
+   * Prints an info message to the CLI (if info/debug level set).
+   *
+   * @param message The message to be printed.
+   */
+  public static void printInfo(String message)
   {
     if (debugLevel <= INFO)
       printGeneric(4, message);
@@ -36,7 +51,12 @@ abstract class Printer implements Constants
 
 // ----------------------------------------------- Printer Class ---------------
 
-  static void printWarning(String message)
+  /**
+   * Prints a warning message to the CLI (if debug/info/warning level set).
+   *
+   * @param message The message to be printed.
+   */
+  public static void printWarning(String message)
   {
     if (debugLevel <= WARNING)
       printGeneric(3, message);
@@ -44,7 +64,12 @@ abstract class Printer implements Constants
 
 // ----------------------------------------------- Printer Class ---------------
 
-  static void printError(String message)
+  /**
+   * Prints an error message to the CLI (if debug/info/warning/error level set).
+   *
+   * @param message The message to be printed.
+   */
+  public static void printError(String message)
   {
     if (debugLevel <= ERROR)
       printGeneric(1, message);
