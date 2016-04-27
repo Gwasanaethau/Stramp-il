@@ -4,7 +4,7 @@ Strampáil is a Java-based [STOMP](http://stomp.github.io/) client/server librar
 
 ### May I use this? ###
 
-Be my guest, though it is just a proof-of-concept project for me at the moment.
+The project is licensed under the MIT Licence, so be my guest!
 
 ### Can I use this? ###
 
