@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * with version 1.1 of the STOMP protocol.
  *
  * @author Mark David Pokorny
- * @version Dé Domhnaigh, 24ú Aibreán 2016
+ * @version Déardaoin, 28ú Aibreán 2016
  * @since Déardaoin, 21ú Aibreán 2016
  */
 public class ClientInterface implements Constants

@@ -13,7 +13,7 @@ import java.util.HashMap;
  * and deals with them appropriately.
  *
  * @author Mark David Pokorny
- * @version Dé Máirt, 26ú Aibreán 2016
+ * @version Déardaoin, 28ú Aibreán 2016
  * @since Déardaoin, 21ú Aibreán 2016
  */
 class ClientReceiver extends Thread
@@ -44,11 +44,7 @@ class ClientReceiver extends Thread
     Printer.printDebug("Receiver activated!");
 
     while (active)
-    {
-      String frame = listen();
-      if (frame != null)
-        parseFrame(frame);
-    } // End while
+      listen();
 
     Printer.printDebug("Receiver deactivated!");
 
@@ -56,46 +52,181 @@ class ClientReceiver extends Thread
 
 // ---------------------------------------- ClientReceiver Class ---------------
 
-  private String listen()
+  private void listen()
   {
-    /*
-     * FIXME:
-     * 1MiB buffer should be _PLENTY_!
-     * But really this should be tailored to the frame as
-     * STOMP doesn’t limit size of headers or body,
-     * but that’s just extra work at the moment! ;-Þ
-     */
-    byte[] partialFrame = new byte[1024];
-    int index = 0;
-    String frame = null;
 
     try
     {
+      StringBuilder debugMessages = new StringBuilder(
+        "Frame received \033[1;35m↓\n←←←\033[0m\n");
 
-      byte symbol = -2;
-      while (symbol != 0 && symbol != -1) // i.e. NUL or closed stream
+      // Finite automata state 1:
+      String command;
+      byte[] commandBytes = new byte[12]; // Length of ‘U-N-S-U-B-S-C-R-I-B-E-\n’
+      byte index = 0;
+
+      byte symbol = (byte) receiver.read();
+      while (true)
       {
-        symbol = (byte) receiver.read();
-        partialFrame[index++] = symbol;
+        if (symbol == -1)
+        {
+          Printer.printWarning("Connection closed from remote end.");
+          active = false;
+          return;
+        } // End if
+        else if (symbol == 0)
+        {
+          Printer.printError("Malformed STOMP frame received.");
+          return;
+        } // End else if
+        else if (symbol == '\n')
+          break;
+        else
+        {
+          commandBytes[index++] = symbol;
+          symbol = (byte) receiver.read();
+        } // End else
+
       } // End while
 
-      if (symbol == -1)
+      command = new String(commandBytes, 0, index);
+      debugMessages.append(command + "\n");
+
+      int contentLength = -1;
+      HashMap<String, String> headers = new HashMap<String, String>();
+
+      while (true) // (1)
       {
-        Printer.printInfo("Closing receiver.");
-        active = false;
+        // Finite automata state 2:
+        String key;
+        byte[] keyBytes = new byte[1024]; // 1kiB
+        index = 0;
+
+        symbol = (byte) receiver.read();
+
+        if (symbol == '\n')
+          break;
+
+        while (true) // (2)
+        {
+          if (symbol == -1)
+          {
+            Printer.printWarning("Connection closed from remote end.");
+            active = false;
+            return;
+          } // End if
+          else if (symbol == 0 || symbol == '\n')
+          {
+            Printer.printError("Malformed STOMP frame received.");
+            return;
+          } // End else if
+          else if (symbol == ':')
+            break;
+          else
+          {
+            keyBytes[index++] = symbol;
+            symbol = (byte) receiver.read();
+          } // End else
+
+        } // End while (2)
+
+        key = new String(keyBytes, 0, index);
+
+        // Finite automata state 3:
+        String value;
+        byte[] valueBytes = new byte[1024]; // 1kiB
+        index = 0;
+
+        symbol = (byte) receiver.read();
+        while (true) // (3)
+        {
+          if (symbol == -1)
+          {
+            Printer.printWarning("Connection closed from remote end.");
+            active = false;
+            return;
+          } // End if
+          else if (symbol == 0 || symbol == ':')
+          {
+            Printer.printError("Malformed STOMP frame received.");
+            return;
+          } // End else if
+          else if (symbol == '\n')
+            break;
+          else
+          {
+            valueBytes[index++] = symbol;
+            symbol = (byte) receiver.read();
+          } // End else
+
+        } // End while (3)
+
+        value = new String(valueBytes, 0, index);
+
+        if (key.equals("content-length"))
+          contentLength = Integer.parseInt(value);
+
+        headers.put(key, value);
+        debugMessages.append(key + ":" + value + "\n");
+      } // End while (1)
+
+      debugMessages.append("\n");
+
+      // Finite automata state 7:
+
+      String body;
+      byte[] bodyBytes;
+      if (contentLength >= 1)
+      {
+        bodyBytes = new byte[contentLength];
+
+        for (index = 0; index < contentLength; index++)
+          bodyBytes[index] = (byte) receiver.read();
+
+        if (receiver.read() != 0)
+          Printer.printWarning(
+            "content-length header mismatch (more data in frame)");
+
+        body = new String(bodyBytes);
       } // End if
       else
       {
-        frame = new String(partialFrame, 0, index - 1); // Strip out NUL
-        Printer.printDebug("Frame received \033[1;35m↓\n←←←\033[0m\n" +
-          frame + "\n\033[1;35m←←←\033[0m");
+        bodyBytes = new byte[1024]; // 1kiB
+        index = 0;
+
+        symbol = (byte) receiver.read();
+        while (true)
+        {
+          if (symbol == -1)
+          {
+            Printer.printWarning("Connection closed from remote end.");
+            active = false;
+            return;
+          } // End if
+          else if (symbol == 0)
+            break;
+          else
+          {
+            bodyBytes[index++] = symbol;
+            symbol = (byte) receiver.read();
+          } // End else
+
+        } // End while
+
+        body = new String(bodyBytes, 0, index);
+
       } // End else
+
+      Printer.printDebug(debugMessages.toString() +
+        body + "\n\033[1;35m←←←\033[0m");
+
+      notifyClient(command, headers, body);
 
     } // End try
 
     catch (SocketException se)
     {
-      Printer.printInfo("Closing receiver.");
+      Printer.printWarning("Connection closed from remote end.");
       active = false;
     } // End ‘SocketException’ catch
 
@@ -105,44 +236,7 @@ class ClientReceiver extends Thread
       active = false;
     } // End ‘IOException’ catch
 
-    return frame;
-
   } // End ‘listen()’ Method
-
-// ---------------------------------------- ClientReceiver Class ---------------
-
-  private void parseFrame(String frame)
-  {
-    int indexOfLastNewline = frame.indexOf('\n');
-    String command = frame.substring(0, indexOfLastNewline);
-
-    HashMap<String, String> headers = new HashMap<String, String>();
-    boolean moreHeaders = true;
-
-    while (moreHeaders)
-    {
-
-      int indexOfNextNewline = frame.indexOf('\n', indexOfLastNewline + 1);
-
-      if (indexOfNextNewline - indexOfLastNewline == 1)
-        moreHeaders = false;
-      else
-      {
-        int indexOfColon = frame.indexOf(":", indexOfLastNewline);
-        headers.put(
-          frame.substring(indexOfLastNewline + 1, indexOfColon),
-          frame.substring(indexOfColon + 1, indexOfNextNewline));
-      } // End else
-
-      indexOfLastNewline = indexOfNextNewline;
-
-    } // End while
-
-    String body = frame.substring(indexOfLastNewline + 1);
-
-    notifyClient(command, headers, body);
-
-  } // End ‘parseFrame(String)’ Method
 
 // ---------------------------------------- ClientReceiver Class ---------------
 

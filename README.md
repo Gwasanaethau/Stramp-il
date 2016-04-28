@@ -47,4 +47,4 @@ It can deal with server responses, specifically:
 - RECEIPT;
 - MESSAGE.
 
-It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present. In addition, the current algorithm for extracting frame body data will fail if there are NUL bytes in the body (i.e. it will only extract part of the body up as far as the first NUL byte).
+It does not support custom headers, nor heart-beating. Note also that Strampáil does not do protocol negotiation – it is locked to version 1.1 as of present.
