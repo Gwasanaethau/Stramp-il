@@ -158,6 +158,11 @@ public class ClientInterface implements Constants
     else
       Printer.printWarning("Connection already closed!");
 
+    if (errorReceived)
+      System.exit(1);
+    else
+      System.exit(0);
+
   } // End ‘close()’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
@@ -541,10 +546,12 @@ public class ClientInterface implements Constants
   /**
    * Registers receipt of an <code>ERROR</code> frame.
    */
-  void notifyError()
+  void notifyError(String body)
   {
+    Printer.printError("Error frame received:\n" + body);
     errorReceived = true;
-  } // End ‘notifyError()’ Method
+    close();
+  } // End ‘notifyError(String)’ Method
 
 // --------------------------------------- ClientInterface Class ---------------
 
@@ -584,9 +591,12 @@ public class ClientInterface implements Constants
     while (sequenceReceived != sequenceNumber && !errorReceived)
       Thread.yield();
 
-    Printer.printInfo("Receipt " + sequenceNumber + " received.");
-    sequenceNumber++;
-    sequenceReceived = 0;
+    if (sequenceReceived == sequenceNumber)
+    {
+      Printer.printInfo("Receipt " + sequenceNumber + " received.");
+      sequenceNumber++;
+      sequenceReceived = 0;
+    } // End else if
 
   } // End ‘waitForReceipt()’ Method
 

@@ -153,7 +153,7 @@ class ClientReceiver extends Thread
     if (command.equals("CONNECTED"))
       client.notifyConnected();
     else if (command.equals("ERROR"))
-      client.notifyError();
+      client.notifyError(body);
     else if (command.equals("RECEIPT"))
     {
       String receiptID = headers.get("receipt-id");
