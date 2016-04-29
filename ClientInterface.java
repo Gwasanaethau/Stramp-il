@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * with version 1.1 of the STOMP protocol.
  *
  * @author Mark David Pokorny
- * @version Déardaoin, 28ú Aibreán 2016
+ * @version Dé hAoine, 29ú Aibreán 2016
  * @since Déardaoin, 21ú Aibreán 2016
  */
 public class ClientInterface implements Constants
@@ -157,6 +157,8 @@ public class ClientInterface implements Constants
     } // End if
     else
       Printer.printWarning("Connection already closed!");
+
+    try { receiver.join(); } catch (InterruptedException ie) {}
 
     if (errorReceived)
       System.exit(1);
