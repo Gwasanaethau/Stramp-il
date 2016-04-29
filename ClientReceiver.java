@@ -163,7 +163,21 @@ class ClientReceiver extends Thread
 
     while (symbol != -1 && symbol != 0 && symbol != '\n' && symbol != ':')
     {
-      keyBytes[index++] = symbol;
+      if (symbol == '\\')
+      {
+        symbol = (byte) receiver.read();
+        if (symbol == 'c')
+          keyBytes[index++] = ':';
+        else if (symbol == 'n')
+          keyBytes[index++] = '\n';
+        else if (symbol == '\\')
+          keyBytes[index++] = '\\';
+        else
+          malformedSTOMP();
+      } // End if
+      else
+        keyBytes[index++] = symbol;
+
       symbol = (byte) receiver.read();
     } // End while
 
@@ -190,7 +204,21 @@ class ClientReceiver extends Thread
     byte symbol = (byte) receiver.read();
     while (symbol != -1 && symbol != 0 && symbol != ':' && symbol != '\n')
     {
-      valueBytes[index++] = symbol;
+      if (symbol == '\\')
+      {
+        symbol = (byte) receiver.read();
+        if (symbol == 'c')
+          valueBytes[index++] = ':';
+        else if (symbol == 'n')
+          valueBytes[index++] = '\n';
+        else if (symbol == '\\')
+          valueBytes[index++] = '\\';
+        else
+          malformedSTOMP();
+      } // End if
+      else
+        valueBytes[index++] = symbol;
+
       symbol = (byte) receiver.read();
     } // End while
 
