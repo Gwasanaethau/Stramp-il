@@ -117,7 +117,7 @@ class ClientReceiver extends Thread
     else if (symbol == 0)
       malformedSTOMP();
     else
-      command = new String(commandBytes, 0, index);
+      command = new String(commandBytes, 0, index, "UTF-8");
 
     return command;
 
@@ -172,7 +172,7 @@ class ClientReceiver extends Thread
     else if (symbol == 0 || symbol == '\n')
       malformedSTOMP();
     else
-      key = new String(keyBytes, 0, index);
+      key = new String(keyBytes, 0, index, "UTF-8");
 
     return key;
 
@@ -199,7 +199,7 @@ class ClientReceiver extends Thread
     else if (symbol == 0 || symbol == ':')
       malformedSTOMP();
     else
-      value = new String(valueBytes, 0, index);
+      value = new String(valueBytes, 0, index, "UTF-8");
 
     return value;
 
@@ -224,7 +224,7 @@ class ClientReceiver extends Thread
         Printer.printWarning(
           "content-length header mismatch (more data in frame)");
 
-      body = new String(bodyBytes);
+      body = new String(bodyBytes, "UTF-8");
     } // End if
     else
     {
@@ -241,7 +241,7 @@ class ClientReceiver extends Thread
       if (symbol == -1)
         remoteClosed();
 
-      body = new String(bodyBytes, 0, index);
+      body = new String(bodyBytes, 0, index, "UTF-8");
     } // End else
 
     return body;
