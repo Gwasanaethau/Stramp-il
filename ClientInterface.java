@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * with version 1.1 of the STOMP protocol.
  *
  * @author Mark David Pokorny
- * @version Dé Sathairn, 30ú Aibreán 2016
+ * @version Dé Lúain, 2ú Bealtaine 2016
  * @since Déardaoin, 21ú Aibreán 2016
  */
 public class ClientInterface implements Constants
@@ -112,7 +112,7 @@ public class ClientInterface implements Constants
 
     catch (IOException ioe)
     {
-      Printer.printError("Cannot connect to port " + port + "." +
+      Printer.printError("Cannot connect to " + address + ":" + port + "." +
         " Check that there’s a server running there and try again.");
     } // End ‘IOException’ catch
 
